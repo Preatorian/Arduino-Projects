@@ -43,10 +43,10 @@ int **aaa;
     pinMode(6, OUTPUT);
     pinMode(7, OUTPUT);
     pinMode(8, OUTPUT);
-  analogWrite(A1,200);//czerowny
+  analogWrite(A1,200);
   
   analogWrite(A4,128);
-  digitalWrite(8,LOW);//pomaranczowy 
+  digitalWrite(8,LOW); 
   }
 int volt=0,voltagein=0;
 
