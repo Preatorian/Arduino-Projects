@@ -74,13 +74,6 @@ void readblock(unsigned long blocknr){
 
 
 
-
-
-
-
-
-
-
 int response=0;
 void setup() {
     
