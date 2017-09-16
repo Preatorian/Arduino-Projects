@@ -40,7 +40,7 @@ void cleanflash()
     delay(10);//after erasechip command min 9.5ms delay is required!!!!, without it the chip wont be erased (delay is required after every word write)
 }
 
-void writeflashwordlow(int page,int offset,int bytee)
+void writeflashlow(int page,int offset,int bytee)
 {
     
     if(offset>31 || offset<0)
@@ -51,14 +51,14 @@ void writeflashwordlow(int page,int offset,int bytee)
     //128 pages x 32 words == 4096 words(commands)
     delay(5);//required
     serialsend(MOSI,MISO,CLK,0x40);
-    serialsend(MOSI,MISO,CLK,page);
-    serialsend(MOSI,MISO,CLK,offset);
+    serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 3840) >> 8));
+    serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 224) | offset));
     serialsend(MOSI,MISO,CLK,bytee);
     delay(5);//required
   
 }
 
-void writeflashwordhigh(int page,int offset,int bytee)
+void writeflashhigh(int page,int offset,int bytee)
 {
     
     if(offset>31 || offset<0)
@@ -69,8 +69,8 @@ void writeflashwordhigh(int page,int offset,int bytee)
     //128 pages x 32 words == 4096 words(commands)
     delay(5);//required
     serialsend(MOSI,MISO,CLK,0x48);
-    serialsend(MOSI,MISO,CLK,page);
-    serialsend(MOSI,MISO,CLK,offset);
+    serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 3840) >> 8));
+    serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 224) | offset));
     serialsend(MOSI,MISO,CLK,bytee);
     delay(5);//required
   
@@ -78,8 +78,8 @@ void writeflashwordhigh(int page,int offset,int bytee)
 void buffertoflash(int page){
   
     serialsend(MOSI,MISO,CLK,0x4c);
-    serialsend(MOSI,MISO,CLK,page);
-    serialsend(MOSI,MISO,CLK,0);
+    serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 3840) >> 8));
+    serialsend(MOSI,MISO,CLK,(unsigned char)((page<<5) & 224));
     serialsend(MOSI,MISO,CLK,0);
     delay(5);//required
 }
@@ -91,16 +91,16 @@ int readflash(int loworhigh,int page,int offset)
     if(loworhigh)
     {
         serialsend(MOSI,MISO,CLK,0x20);//low byte
-        serialsend(MOSI,MISO,CLK,page);
-        serialsend(MOSI,MISO,CLK,offset);
+        serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 3840) >> 8));
+        serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 224) | offset));
         respond = serialsend(MOSI,MISO,CLK,0);
         delay(5);//required
     }
     else
     {
         serialsend(MOSI,MISO,CLK,0x28);//high byte
-        serialsend(MOSI,MISO,CLK,page);
-        serialsend(MOSI,MISO,CLK,offset);
+        serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 3840) >> 8));
+        serialsend(MOSI,MISO,CLK,(unsigned char)(((page<<5) & 224) | offset));
         respond = serialsend(MOSI,MISO,CLK,0);
         delay(5);//required
     }
@@ -136,30 +136,30 @@ void setup() {
         Serial.println("programming enabled");
     else
         Serial.println("ERROR...programming not enabled");
-    cleanflash();
+    cleanflash(); 
     for(int x=0;x<128;x++)
     {
-        
+       
         for(int i=0;i<32;i++)
         {
-            writeflashwordhigh(0,i,i);
+            
+                writeflashlow(0,i,i);
+                writeflashhigh(0,i,x);
         }
-        delay(20);//required
     buffertoflash(x);
     }
     //writeflashword(0,0,0,0);
-   /// writeflashword(0,1,31,239);
-   /// writeflashword(0,2,47,239);
+   /// writeflashword(0,1,31,227);
+   /// writeflashword(0,2,47,227);
     for(int x=0;x<128;x++)
     {
         Serial.println(x);
         for(int i=0;i<32;i++)
         {
-        delay(10);//required
+        Serial.print(readflash(0,x,i));
+        Serial.print(" ");
         Serial.println(readflash(1,x,i));
         }
-        delay(10);//required
-        Serial.println();
     }
     
 
@@ -168,4 +168,6 @@ void setup() {
 }
 
 void loop() {
+  
+  //  Serial.println(analogRead(A0));
 }
